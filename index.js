@@ -162,7 +162,8 @@ function authToken(req, res, next) {
   }
   if (token) {
     try {
-      jwt.verify(token, "MY_SECRET_TOKEN");
+      const response = jwt.verify(token, "MY_SECRET_TOKEN");
+      req.username = response.username;
       next();
     } catch (error) {
       res.status(401).send("Invalid Access");
@@ -171,3 +172,11 @@ function authToken(req, res, next) {
     res.status(401).send("Unauthorized Access");
   }
 }
+
+app.get("/users/profile", authToken, async (req, res) => {
+  const { username } = req;
+  console.log(username);
+  const getUserQuery = `SELECT * FROM user WHERE username ="${username}";`;
+  const dbUser = await db.get(getUserQuery);
+  res.send(dbUser);
+});
